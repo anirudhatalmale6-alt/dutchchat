@@ -11,6 +11,9 @@ let clickedUser = null;
 let ignoreList = [];
 let activePrivateTab = null;
 let privateTabs = {};
+let loginTime = null;
+let idleTimer = null;
+let idleSeconds = 0;
 
 const $ = (sel) => document.querySelector(sel);
 const $$ = (sel) => document.querySelectorAll(sel);
@@ -36,10 +39,8 @@ const messagesList = $('#messages');
 const messageForm = $('#messageForm');
 const messageInput = $('#messageInput');
 const colorPicker = $('#colorPicker');
-const channelInfo = $('#channelInfo');
-const userInfo = $('#userInfo');
-const usersList = $('#usersList');
-const usersHeader = $('#usersHeader');
+const welcomeBar = $('#welcomeBar');
+const userStatusLine = $('#userStatusLine');
 const channelChatArea = $('#channelChatArea');
 
 // Private
@@ -52,6 +53,8 @@ const searchUsersListEl = $('#searchUsersList');
 const userActions = $('#userActions');
 const selectedUserInfoEl = $('#selectedUserInfo');
 const operButtons = $('#operButtons');
+const usersList = $('#usersList');
+const usersCount = $('#usersCount');
 
 // Text size
 const textSizeSlider = $('#textSizeSlider');
@@ -105,6 +108,13 @@ function getCurrentTime() {
   return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}:${String(d.getSeconds()).padStart(2,'0')}`;
 }
 
+function formatDuration(secs) {
+  const h = String(Math.floor(secs / 3600)).padStart(2, '0');
+  const m = String(Math.floor((secs % 3600) / 60)).padStart(2, '0');
+  const s = String(secs % 60).padStart(2, '0');
+  return `${h}:${m}:${s}`;
+}
+
 // ============================================
 // CONNECTING SCREEN
 // ============================================
@@ -112,6 +122,7 @@ function getCurrentTime() {
 socket.on('connect', () => {
   connectingScreen.style.display = 'none';
   loginScreen.style.display = 'flex';
+  loadRememberedLogin();
 });
 
 socket.on('connect_error', () => {
@@ -121,23 +132,65 @@ socket.on('connect_error', () => {
 
 socket.io.on('reconnect', () => {
   connectingStatus.textContent = 'Verbinding hersteld!';
-  connectingStatus.style.color = '#00b894';
+  connectingStatus.style.color = '#2ecc71';
 });
 
 // ============================================
-// UI EVENT LISTENERS
+// REMEMBER ME
 // ============================================
 
-// Tab switching
-$$('.tabBtn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    $$('.tabBtn').forEach(b => b.classList.remove('active'));
-    $$('.tabContent').forEach(c => c.classList.remove('active'));
-    btn.classList.add('active');
-    const tab = document.getElementById(btn.dataset.tab);
-    if (tab) tab.classList.add('active');
-  });
-});
+function loadRememberedLogin() {
+  try {
+    const saved = localStorage.getItem('dutchchat_login');
+    if (saved) {
+      const data = JSON.parse(saved);
+      if (data.nickname) $('#nickname').value = data.nickname;
+      if (data.age) $('#age').value = data.age;
+      if (data.gender) $('#gender').value = data.gender;
+      if (data.location) $('#location').value = data.location;
+      if (data.info) $('#additionalInfo').value = data.info;
+      $('#rememberMe').checked = true;
+    }
+  } catch (e) {}
+}
+
+function saveLoginData() {
+  if ($('#rememberMe').checked) {
+    localStorage.setItem('dutchchat_login', JSON.stringify({
+      nickname: $('#nickname').value,
+      age: $('#age').value,
+      gender: $('#gender').value,
+      location: $('#location').value,
+      info: $('#additionalInfo').value,
+    }));
+  } else {
+    localStorage.removeItem('dutchchat_login');
+  }
+}
+
+// ============================================
+// RIGHT PANEL VIEW SWITCHING (3 icons)
+// ============================================
+
+function switchRightView(viewId) {
+  $$('.rightView').forEach(v => v.classList.remove('active'));
+  $$('.topIconBtn').forEach(b => b.classList.remove('active'));
+
+  const view = document.getElementById(viewId);
+  if (view) view.classList.add('active');
+
+  if (viewId === 'channelsView' || viewId === 'newChannelView') {
+    $('#iconChannels').classList.add('active');
+  } else if (viewId === 'usersView') {
+    $('#iconUsers').classList.add('active');
+  } else if (viewId === 'settingsView') {
+    $('#iconSettings').classList.add('active');
+  }
+}
+
+$('#iconChannels').addEventListener('click', () => switchRightView('channelsView'));
+$('#iconUsers').addEventListener('click', () => switchRightView('usersView'));
+$('#iconSettings').addEventListener('click', () => switchRightView('settingsView'));
 
 // Show/hide login/register
 $('#showRegisterBtn').addEventListener('click', () => {
@@ -153,6 +206,11 @@ $('#showLoginBtn').addEventListener('click', () => {
 textSizeSlider.addEventListener('input', () => {
   textSizeValue.textContent = textSizeSlider.value;
   messagesList.style.fontSize = textSizeSlider.value + 'px';
+});
+
+// Color picker in settings syncs to hidden picker
+$('#colorPickerVisible').addEventListener('input', (e) => {
+  colorPicker.value = e.target.value;
 });
 
 // Welcome popup close
@@ -172,6 +230,7 @@ loginForm.addEventListener('submit', (e) => {
 
   if (!nick) return;
 
+  saveLoginData();
   const pw = pass || 'guest';
   socket.emit('login request', `${nick}|${pw}|${age}|${gender}|${location}|${info}`);
   loginButton.disabled = true;
@@ -204,6 +263,8 @@ messageForm.addEventListener('submit', (e) => {
   const text = messageInput.value.trim();
   if (!text) return;
 
+  resetIdle();
+
   if (text === '/clear') {
     messagesList.innerHTML = '';
   } else if (text === '/smilies') {
@@ -216,9 +277,11 @@ messageForm.addEventListener('submit', (e) => {
     const col = text.replace('/color ', '');
     if (/^#[0-9A-Fa-f]{3,6}$/.test(col)) {
       colorPicker.value = col.length === 4 ? col + col.slice(1) : col;
+      $('#colorPickerVisible').value = colorPicker.value;
     }
   } else if (text === '/nocolor') {
     colorPicker.value = '#ffffff';
+    $('#colorPickerVisible').value = '#ffffff';
   } else if (text === '/help') {
     addServerMessage('Beschikbare commando\'s: /join, /part, /kick, /ban, /unban, /op, /deop, /topic, /wall, /whois, /silent, /unsilent, /sban, /sunban, /skick, /kill, /list, /hide, /unhide, /clear, /smilies, /color, /nocolor, /quit, /version, /info');
   } else if (text.startsWith('/select ')) {
@@ -238,23 +301,24 @@ messageForm.addEventListener('submit', (e) => {
   messageInput.value = '';
 });
 
-// CREATE CHANNEL
+// CREATE CHANNEL (inline in right panel)
 $('#createChannelBtn').addEventListener('click', () => {
-  $('#createChannelDialog').style.display = 'flex';
+  switchRightView('newChannelView');
 });
 $('#cancelCreateChannel').addEventListener('click', () => {
-  $('#createChannelDialog').style.display = 'none';
+  switchRightView('channelsView');
 });
 $('#createChannelForm').addEventListener('submit', (e) => {
   e.preventDefault();
   const name = $('#newChannelName').value.trim();
   const topic = $('#newChannelTopic').value.trim();
-  const type = document.querySelector('input[name="newChannelType"]:checked').value;
+  const type = 'Normal';
   if (!name) return;
   socket.emit('create channel', `${name}|${topic}|${type}`);
   $('#newChannelName').value = '';
   $('#newChannelTopic').value = '';
-  $('#createChannelDialog').style.display = 'none';
+  $('#newChannelPassword').value = '';
+  switchRightView('channelsView');
 });
 
 // SEARCH
@@ -268,16 +332,10 @@ $('#searchForm').addEventListener('submit', (e) => {
 $('#cancelSearchBtn').addEventListener('click', () => {
   searchUsersListEl.style.display = 'none';
   usersList.style.display = 'block';
-  $$('.tabBtn').forEach(b => b.classList.remove('active'));
-  $$('.tabContent').forEach(c => c.classList.remove('active'));
-  $$('.tabBtn')[0].classList.add('active');
-  $('#usersTab').classList.add('active');
 });
 
 // MOD BUTTONS
-$('#privateBtn').addEventListener('click', () => {
-  if (clickedUser) openPrivateTab(clickedUser.nickname);
-});
+$('#privateBtn').addEventListener('click', () => { if (clickedUser) openPrivateTab(clickedUser.nickname); });
 $('#ignoreBtn').addEventListener('click', () => {
   if (clickedUser) {
     if (ignoreList.includes(clickedUser.nickname)) {
@@ -315,6 +373,12 @@ $('#uploadImageBtn').addEventListener('click', () => {
 $('#closeClogBtn').addEventListener('click', () => {
   $('#clogDialog').style.display = 'none';
 });
+
+// IDLE TRACKING
+function resetIdle() {
+  idleSeconds = 0;
+}
+messageInput.addEventListener('keydown', resetIdle);
 
 // ============================================
 // SOCKET EVENT HANDLERS
@@ -430,7 +494,7 @@ socket.on('changed channel', (channelName) => {
     messagesList.innerHTML = '';
     channelUsers = [];
     renderUsersList();
-    updateChannelInfo();
+    updateStatusLine();
     return;
   }
   thisUser.currentChannel = channelName;
@@ -438,7 +502,7 @@ socket.on('changed channel', (channelName) => {
   channelUsers = [];
   deselectUser();
   activePrivateTab = null;
-  updateChannelInfo();
+  updateStatusLine();
   highlightActiveChannel();
 });
 
@@ -453,13 +517,13 @@ socket.on('channel user numbers update', (msg) => {
     totalUsers += parseInt(count) || 0;
   }
   renderChannelList();
-  updateChannelInfo();
+  updateStatusLine();
 });
 
 socket.on('channel topic update', (topic) => {
   const ch = channels.find(c => c.name === thisUser.currentChannel);
   if (ch) ch.topic = topic;
-  updateChannelInfo();
+  updateStatusLine();
 });
 
 socket.on('search result', (msg) => {
@@ -493,8 +557,13 @@ function showError(el, msg) {
 function enterChat() {
   loginScreen.style.display = 'none';
   chatScreen.style.display = 'flex';
-  userInfo.textContent = 'Welkom ' + thisUser.nickname;
+  welcomeBar.textContent = 'Welkom ' + thisUser.nickname;
   messageInput.focus();
+
+  loginTime = Date.now();
+  idleSeconds = 0;
+  setInterval(updateStatusLine, 1000);
+  setInterval(() => { idleSeconds++; }, 1000);
 
   $('#welcomePopup').style.display = 'flex';
 
@@ -504,11 +573,24 @@ function enterChat() {
   }
 }
 
+function updateStatusLine() {
+  if (!thisUser) return;
+  const nick = thisUser.nickname;
+  const age = thisUser.age || '';
+  const gender = thisUser.gender === 'male' ? 'man' : (thisUser.gender === 'female' ? 'vrouw' : '');
+  const loc = thisUser.location || '';
+  const info = thisUser.additionalInfo || '';
+  const loggedIn = loginTime ? formatDuration(Math.floor((Date.now() - loginTime) / 1000)) : '00:00:00';
+  const idle = formatDuration(idleSeconds);
+
+  userStatusLine.innerHTML = `&lt; ${nick} (${age}) = ${gender}, ${loc}, ${info}, ingelogd: <b>${loggedIn}</b>, inactief: <b>${idle}</b> &gt;`;
+}
+
 function renderChannelList() {
   channelsList.innerHTML = '';
   for (const ch of channels) {
     const li = document.createElement('li');
-    li.innerHTML = `<span class="channelName">${ch.name}</span><span class="channelCount">${ch.currentUsers || 0}</span>`;
+    li.innerHTML = `<span class="channelCount">${ch.currentUsers || 0}</span><span class="channelName">${ch.name}</span>`;
     li.dataset.channel = ch.name;
     if (thisUser && ch.name === thisUser.currentChannel) li.classList.add('active');
     li.addEventListener('click', () => {
@@ -524,17 +606,6 @@ function highlightActiveChannel() {
   });
 }
 
-function updateChannelInfo() {
-  if (!thisUser || !thisUser.currentChannel) {
-    channelInfo.textContent = 'Kies een kanaal';
-    return;
-  }
-  const ch = channels.find(c => c.name === thisUser.currentChannel);
-  const topic = ch ? ch.topic : '';
-  const count = ch ? (ch.currentUsers || 0) : 0;
-  channelInfo.innerHTML = `<strong>${thisUser.currentChannel}</strong> - ${count} van ${totalUsers} chatters ${topic ? '| ' + replaceEmoticons(topic) : ''}`;
-}
-
 function renderUsersList() {
   usersList.innerHTML = '';
   const sorted = [...channelUsers].sort((a, b) => {
@@ -544,7 +615,7 @@ function renderUsersList() {
     return a.nickname.localeCompare(b.nickname);
   });
 
-  usersHeader.textContent = `Gebruikers (${sorted.length})`;
+  usersCount.textContent = `(${sorted.length})`;
 
   for (const u of sorted) {
     const li = document.createElement('li');

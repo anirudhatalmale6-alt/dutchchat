@@ -16,78 +16,85 @@
     </div>
   </div>
 
-  <!-- LOGIN SCREEN -->
+  <!-- LOGIN POPUP (shown after socket connects) -->
   <div id="loginScreen" style="display:none;">
-    <div id="loginContainer">
-      <div id="loginLogo">
-        <h1>DutchChat</h1>
-        <p>De Nederlandse Chatbox</p>
-      </div>
-      <div id="loginPanel">
-        <div id="loginBox" class="authBox">
-          <h2>Inloggen</h2>
-          <form id="loginForm">
-            <div class="formGroup">
-              <label for="nickname">Nickname:</label>
-              <input type="text" id="nickname" placeholder="Nickname" autocomplete="username" required>
-            </div>
-            <div class="formGroup">
-              <label for="password">Wachtwoord:</label>
-              <input type="password" id="password" placeholder="Leeg = gast login" autocomplete="current-password">
-            </div>
-            <div class="formRow">
-              <div class="formGroup half">
-                <label for="age">Leeftijd:</label>
-                <input type="number" id="age" placeholder="18" min="13" max="120">
+    <div id="loginOverlay">
+      <div id="loginPopup">
+        <div id="loginBox" class="loginVisible">
+          <div class="popupHeader">&#128274; Inloggen</div>
+          <div class="popupBody">
+            <form id="loginForm">
+              <table class="formTable">
+                <tr>
+                  <td class="formLabel">Nickname:</td>
+                  <td><input type="text" id="nickname" placeholder="Nickname" autocomplete="username" required></td>
+                </tr>
+                <tr>
+                  <td class="formLabel">Wachtwoord:</td>
+                  <td><input type="password" id="password" placeholder="Wachtwoord" autocomplete="current-password"></td>
+                </tr>
+                <tr>
+                  <td class="formLabel">Leeftijd:</td>
+                  <td><input type="number" id="age" placeholder="Leeftijd" min="13" max="120"></td>
+                </tr>
+                <tr>
+                  <td class="formLabel">Geslacht:</td>
+                  <td>
+                    <select id="gender">
+                      <option value="male">Man</option>
+                      <option value="female">Vrouw</option>
+                    </select>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="formLabel">Woonplaats:</td>
+                  <td><input type="text" id="location" placeholder="Woonplaats"></td>
+                </tr>
+                <tr>
+                  <td class="formLabel">Extra info:</td>
+                  <td><input type="text" id="additionalInfo" placeholder="Extra info"></td>
+                </tr>
+              </table>
+              <div class="popupCheckbox">
+                <label><input type="checkbox" id="rememberMe"> Onthoud gegevens</label>
               </div>
-              <div class="formGroup half">
-                <label for="gender">Geslacht:</label>
-                <select id="gender">
-                  <option value="male">Man</option>
-                  <option value="female">Vrouw</option>
-                </select>
+              <p id="loginError" class="errorText"></p>
+              <div class="popupButtons">
+                <button type="submit" id="loginButton" class="btn btnChat">&#128172; CHATTEN!</button>
+                <button type="button" id="showRegisterBtn" class="btn btnRegister">&#128100; REGISTREREN</button>
               </div>
-            </div>
-            <div class="formGroup">
-              <label for="location">Woonplaats:</label>
-              <input type="text" id="location" placeholder="Amsterdam">
-            </div>
-            <div class="formGroup">
-              <label for="additionalInfo">Extra Info:</label>
-              <input type="text" id="additionalInfo" placeholder="Optioneel">
-            </div>
-            <p id="loginError" class="errorText"></p>
-            <div class="formButtons">
-              <button type="submit" id="loginButton" class="btn btnPrimary">Inloggen</button>
-              <button type="button" id="showRegisterBtn" class="btn btnSecondary">Registreren</button>
-            </div>
-          </form>
+            </form>
+          </div>
         </div>
-        <div id="registerBox" class="authBox" style="display:none;">
-          <h2>Registreren</h2>
-          <form id="registerForm">
-            <div class="formGroup">
-              <label for="regNickname">Nickname:</label>
-              <input type="text" id="regNickname" placeholder="Nickname" required>
-            </div>
-            <div class="formGroup">
-              <label for="regPassword">Wachtwoord:</label>
-              <input type="password" id="regPassword" placeholder="Min. 6 tekens" required>
-            </div>
-            <div class="formGroup">
-              <label for="regPasswordConfirm">Bevestig:</label>
-              <input type="password" id="regPasswordConfirm" placeholder="Herhaal wachtwoord" required>
-            </div>
-            <div class="formGroup">
-              <label for="regEmail">Email:</label>
-              <input type="email" id="regEmail" placeholder="email@voorbeeld.nl" required>
-            </div>
-            <p id="registerError" class="errorText"></p>
-            <div class="formButtons">
-              <button type="submit" id="registerButton" class="btn btnPrimary">Registreren</button>
-              <button type="button" id="showLoginBtn" class="btn btnSecondary">Terug</button>
-            </div>
-          </form>
+        <div id="registerBox" style="display:none;">
+          <div class="popupHeader">&#128100; Registreren</div>
+          <div class="popupBody">
+            <form id="registerForm">
+              <table class="formTable">
+                <tr>
+                  <td class="formLabel">Nickname:</td>
+                  <td><input type="text" id="regNickname" placeholder="Nickname" required></td>
+                </tr>
+                <tr>
+                  <td class="formLabel">Wachtwoord:</td>
+                  <td><input type="password" id="regPassword" placeholder="Min. 6 tekens" required></td>
+                </tr>
+                <tr>
+                  <td class="formLabel">Bevestig:</td>
+                  <td><input type="password" id="regPasswordConfirm" placeholder="Herhaal wachtwoord" required></td>
+                </tr>
+                <tr>
+                  <td class="formLabel">Email:</td>
+                  <td><input type="email" id="regEmail" placeholder="email@voorbeeld.nl" required></td>
+                </tr>
+              </table>
+              <p id="registerError" class="errorText"></p>
+              <div class="popupButtons">
+                <button type="submit" id="registerButton" class="btn btnChat">&#128172; REGISTREREN</button>
+                <button type="button" id="showLoginBtn" class="btn btnRegister">&#128274; TERUG</button>
+              </div>
+            </form>
+          </div>
         </div>
       </div>
     </div>
@@ -95,146 +102,148 @@
 
   <!-- MAIN CHAT -->
   <div id="chatScreen" style="display:none;">
-    <!-- TOP BAR -->
-    <div id="topBar">
-      <div id="topBarLeft">
-        <span id="logoText">DutchChat</span>
-      </div>
-      <div id="topBarCenter">
-        <span id="channelInfo"></span>
-      </div>
-      <div id="topBarRight">
-        <span id="userInfo"></span>
-      </div>
+    <!-- TOP-RIGHT ICONS (above frame) -->
+    <div id="topIcons">
+      <button id="iconChannels" class="topIconBtn active" title="Kanalen">&#9776;</button>
+      <button id="iconUsers" class="topIconBtn" title="Gebruikers">&#9775;</button>
+      <button id="iconSettings" class="topIconBtn" title="Instellingen">&#128295;</button>
     </div>
 
-    <!-- MAIN CONTENT -->
-    <div id="mainContent">
-      <!-- LEFT/CENTER: CHAT -->
-      <div id="chatPanel">
-        <!-- Channel Chat -->
+    <!-- MAIN FRAME -->
+    <div id="chatFrame">
+      <!-- LEFT: CHAT AREA -->
+      <div id="chatSide">
+        <!-- Red Welcome Bar -->
+        <div id="welcomeBar">Welkom</div>
+
+        <!-- Chat Messages -->
         <div id="channelChatArea">
           <ul id="messages"></ul>
         </div>
 
-        <!-- Private Chat Tabs -->
+        <!-- Private Chat -->
         <div id="privateChatArea" style="display:none;">
           <div id="privateTabs"></div>
           <div id="privateMessages"></div>
         </div>
 
+        <!-- User Status Line -->
+        <div id="userStatusLine"></div>
+
         <!-- Message Input -->
         <div id="messageBar">
           <form id="messageForm">
-            <input type="text" id="messageInput" placeholder="Typ een bericht..." autocomplete="off">
-            <input type="color" id="colorPicker" value="#ffffff" title="Tekstkleur">
-            <button type="submit" class="btn btnSend">Verstuur</button>
+            <input type="text" id="messageInput" autocomplete="off">
+            <input type="color" id="colorPicker" value="#ffffff" title="Tekstkleur" style="display:none;">
+            <button type="submit" class="penBtn" title="Verstuur">&#9998;</button>
           </form>
         </div>
       </div>
 
-      <!-- RIGHT: CHANNELS + USERS -->
+      <!-- RIGHT: PANEL -->
       <div id="rightPanel">
-        <!-- Channels Section (always visible) -->
-        <div id="channelsSection">
-          <div class="panelHeader panelHeaderRed">
-            <span>Kanalen</span>
-          </div>
+        <!-- Kanalen View -->
+        <div id="channelsView" class="rightView active">
+          <div class="rpHeader">&#9776; Kanalen</div>
           <ul id="channelsList"></ul>
           <button id="createChannelBtn" class="newChannelBtn">+ NIEUW KANAAL</button>
         </div>
 
-        <!-- Users/Options/Search Section (tabbed) -->
-        <div id="usersSection">
-          <div id="rightTabs">
-            <button class="tabBtn active" data-tab="usersTab">Gebruikers</button>
-            <button class="tabBtn" data-tab="optionsTab">Opties</button>
-            <button class="tabBtn" data-tab="searchTab">Zoeken</button>
-          </div>
-
-          <!-- Users Tab -->
-          <div id="usersTab" class="tabContent active">
-            <div class="panelSubHeader"><span id="usersHeader">Gebruikers</span></div>
-            <ul id="usersList"></ul>
-            <ul id="searchUsersList" style="display:none;"></ul>
-            <div id="userActions" style="display:none;">
-              <div id="selectedUserInfo"></div>
-              <div id="modButtons">
-                <button id="privateBtn" class="btn btnSmall">Prive</button>
-                <button id="ignoreBtn" class="btn btnSmall">Negeren</button>
+        <!-- New Channel Form (replaces channels view) -->
+        <div id="newChannelView" class="rightView">
+          <div class="rpHeader">Nieuw kanaal</div>
+          <div class="rpFormBody">
+            <form id="createChannelForm">
+              <label class="rpLabel">Naam:</label>
+              <input type="text" id="newChannelName" class="rpInput" required>
+              <label class="rpLabel">Onderwerp:</label>
+              <input type="text" id="newChannelTopic" class="rpInput">
+              <label class="rpLabel">Kanaal wachtwoord:</label>
+              <input type="text" id="newChannelPassword" class="rpInput">
+              <div class="rpCheckbox">
+                <label><input type="checkbox" id="newChannelInvisible"> Onzichtbaar</label>
               </div>
-              <div id="operButtons" style="display:none;">
-                <button id="operBtn" class="btn btnSmall btnGreen">Oper</button>
-                <button id="superBtn" class="btn btnSmall btnGreen">Super</button>
-                <button id="kickBtn" class="btn btnSmall btnRed">Kick</button>
-                <button id="banBtn" class="btn btnSmall btnRed">Ban</button>
-                <button id="silentBtn" class="btn btnSmall btnOrange">Silent</button>
-                <button id="unsilentBtn" class="btn btnSmall btnGreen">Unsilent</button>
-              </div>
-            </div>
-          </div>
-
-          <!-- Options Tab -->
-          <div id="optionsTab" class="tabContent">
-            <div class="panelSubHeader"><span>Opties</span></div>
-            <div class="optionsList">
-              <label class="optionItem">
-                <input type="checkbox" id="noStatusMessages"> Geen statusberichten
-              </label>
-              <label class="optionItem">
-                <input type="checkbox" id="textStandardColor"> Tekst in standaard kleur
-              </label>
-              <label class="optionItem">
-                <input type="checkbox" id="ignorePrivateMessages"> Prive berichten negeren
-              </label>
-              <label class="optionItem">
-                <input type="checkbox" id="privateWindows" checked> Prive vensters
-              </label>
-              <div class="optionItem">
-                <label>Tekstgrootte: <span id="textSizeValue">13</span>px</label>
-                <input type="range" id="textSizeSlider" min="10" max="22" value="13">
-              </div>
-              <div class="optionItem">
-                <label>Profielafbeelding</label>
-                <input type="file" id="profileImageInput" accept=".jpg,.jpeg,.png,.gif">
-                <button id="uploadImageBtn" class="btn btnSmall">Upload</button>
-              </div>
-            </div>
-          </div>
-
-          <!-- Search Tab -->
-          <div id="searchTab" class="tabContent">
-            <div class="panelSubHeader"><span>Zoeken</span></div>
-            <form id="searchForm">
-              <div class="formGroup">
-                <label>Zoek op:</label>
-                <label class="radioItem"><input type="radio" name="searchOn" value="Channel" checked> Kanaal</label>
-                <label class="radioItem"><input type="radio" name="searchOn" value="Whole"> Hele chat</label>
-              </div>
-              <div class="formGroup">
-                <label>Geslacht:</label>
-                <label class="radioItem"><input type="radio" name="searchGender" value="male"> Man</label>
-                <label class="radioItem"><input type="radio" name="searchGender" value="female"> Vrouw</label>
-                <label class="radioItem"><input type="radio" name="searchGender" value="both" checked> Beide</label>
-              </div>
-              <div class="formGroup">
-                <label for="searchName">Naam:</label>
-                <input type="text" id="searchName" placeholder="Zoek op naam">
-              </div>
-              <div class="formButtons">
-                <button type="submit" class="btn btnSmall btnPrimary">Zoeken</button>
-                <button type="button" id="cancelSearchBtn" class="btn btnSmall btnSecondary">Annuleer</button>
+              <div class="rpButtons">
+                <button type="submit" class="btn btnMaak">MAAK KANAAL</button>
+                <button type="button" id="cancelCreateChannel" class="btn btnAnnuleer">ANNULEER</button>
               </div>
             </form>
           </div>
         </div>
+
+        <!-- Users View -->
+        <div id="usersView" class="rightView">
+          <div class="rpHeader">Gebruikers <span id="usersCount"></span></div>
+          <ul id="usersList"></ul>
+          <ul id="searchUsersList" style="display:none;"></ul>
+          <div id="userActions" style="display:none;">
+            <div id="selectedUserInfo"></div>
+            <div id="modButtons">
+              <button id="privateBtn" class="btn btnSmall">Prive</button>
+              <button id="ignoreBtn" class="btn btnSmall">Negeren</button>
+            </div>
+            <div id="operButtons" style="display:none;">
+              <button id="operBtn" class="btn btnSmall btnGreen">Oper</button>
+              <button id="superBtn" class="btn btnSmall btnGreen">Super</button>
+              <button id="kickBtn" class="btn btnSmall btnRed">Kick</button>
+              <button id="banBtn" class="btn btnSmall btnRed">Ban</button>
+              <button id="silentBtn" class="btn btnSmall btnOrange">Silent</button>
+              <button id="unsilentBtn" class="btn btnSmall btnGreen">Unsilent</button>
+            </div>
+          </div>
+          <!-- Search inside users view -->
+          <div id="searchSection">
+            <div class="rpSubHeader">Zoeken</div>
+            <form id="searchForm">
+              <div class="rpSearchRow">
+                <label class="radioItem"><input type="radio" name="searchOn" value="Channel" checked> Kanaal</label>
+                <label class="radioItem"><input type="radio" name="searchOn" value="Whole"> Hele chat</label>
+              </div>
+              <div class="rpSearchRow">
+                <label class="radioItem"><input type="radio" name="searchGender" value="male"> Man</label>
+                <label class="radioItem"><input type="radio" name="searchGender" value="female"> Vrouw</label>
+                <label class="radioItem"><input type="radio" name="searchGender" value="both" checked> Beide</label>
+              </div>
+              <input type="text" id="searchName" class="rpInput" placeholder="Zoek op naam">
+              <div class="rpButtons">
+                <button type="submit" class="btn btnSmall btnMaak">Zoeken</button>
+                <button type="button" id="cancelSearchBtn" class="btn btnSmall btnAnnuleer">Annuleer</button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- Settings View -->
+        <div id="settingsView" class="rightView">
+          <div class="rpHeader">&#128295; Instellingen</div>
+          <div class="rpFormBody">
+            <label class="optionItem"><input type="checkbox" id="noStatusMessages"> Geen statusberichten</label>
+            <label class="optionItem"><input type="checkbox" id="textStandardColor"> Tekst in standaard kleur</label>
+            <label class="optionItem"><input type="checkbox" id="ignorePrivateMessages"> Prive berichten negeren</label>
+            <label class="optionItem"><input type="checkbox" id="privateWindows" checked> Prive vensters</label>
+            <div class="optionItem">
+              <label>Tekstgrootte: <span id="textSizeValue">13</span>px</label>
+              <input type="range" id="textSizeSlider" min="10" max="22" value="13">
+            </div>
+            <div class="optionItem">
+              <label>Tekstkleur:</label>
+              <input type="color" id="colorPickerVisible" value="#ffffff">
+            </div>
+            <div class="optionItem">
+              <label>Profielafbeelding</label>
+              <input type="file" id="profileImageInput" accept=".jpg,.jpeg,.png,.gif">
+              <button id="uploadImageBtn" class="btn btnSmall">Upload</button>
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
 
     <!-- WELCOME POPUP -->
     <div id="welcomePopup" class="dialog" style="display:none;">
-      <div class="dialogContent welcomeDialog">
-        <div class="dialogHeader">Welkom bij DutchChat</div>
+      <div class="welcomeDialogContent">
+        <div class="popupHeader">Welkom bij DutchChat</div>
         <div class="welcomeBody">
           <p>Welkom in de chat! Houd je aan de volgende regels:</p>
           <ul>
@@ -246,51 +255,29 @@
           </ul>
           <p class="welcomeNote">Door verder te gaan ga je akkoord met deze regels.</p>
         </div>
-        <button id="closeWelcomeBtn" class="btn btnPrimary welcomeCloseBtn">Akkoord &amp; Doorgaan</button>
-      </div>
-    </div>
-
-    <!-- CREATE CHANNEL DIALOG -->
-    <div id="createChannelDialog" class="dialog" style="display:none;">
-      <div class="dialogContent">
-        <div class="dialogHeader">Nieuw Kanaal</div>
-        <form id="createChannelForm">
-          <div class="formGroup">
-            <label for="newChannelName">Naam:</label>
-            <input type="text" id="newChannelName" placeholder="Kanaal naam" required>
-          </div>
-          <div class="formGroup">
-            <label for="newChannelTopic">Topic:</label>
-            <input type="text" id="newChannelTopic" placeholder="Kanaal topic">
-          </div>
-          <div class="formGroup">
-            <label>Type:</label>
-            <label class="radioItem"><input type="radio" name="newChannelType" value="Normal" checked> Normaal</label>
-            <label class="radioItem"><input type="radio" name="newChannelType" value="Admin"> Admin</label>
-          </div>
-          <div class="formButtons">
-            <button type="submit" class="btn btnPrimary">Aanmaken</button>
-            <button type="button" id="cancelCreateChannel" class="btn btnSecondary">Annuleer</button>
-          </div>
-        </form>
+        <div class="welcomeBtnWrap">
+          <button id="closeWelcomeBtn" class="btn btnChat">Akkoord &amp; Doorgaan</button>
+        </div>
       </div>
     </div>
 
     <!-- CHAT LOG DIALOG -->
     <div id="clogDialog" class="dialog" style="display:none;">
-      <div class="dialogContent dialogWide">
-        <div class="dialogHeader">Chat Log</div>
+      <div class="clogDialogContent">
+        <div class="popupHeader">Chat Log</div>
         <div id="clogContent"></div>
-        <button id="closeClogBtn" class="btn btnSecondary">Sluiten</button>
+        <div class="welcomeBtnWrap">
+          <button id="closeClogBtn" class="btn btnAnnuleer">Sluiten</button>
+        </div>
       </div>
     </div>
 
-    <!-- DISCONNECT MESSAGE -->
+    <!-- DISCONNECT OVERLAY -->
     <div id="disconnectOverlay" style="display:none;">
       <div class="disconnectBox">
         <h2>Verbinding verbroken</h2>
         <p>De verbinding met de server is verloren.</p>
-        <button onclick="location.reload()" class="btn btnPrimary">Opnieuw verbinden</button>
+        <button onclick="location.reload()" class="btn btnChat">Opnieuw verbinden</button>
       </div>
     </div>
   </div>
