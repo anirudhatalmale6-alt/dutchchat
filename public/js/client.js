@@ -1,6 +1,6 @@
 'use strict';
 
-const socket = io();
+const socket = io(CHAT_SERVER_URL);
 
 let thisUser = null;
 let channels = [];
@@ -12,11 +12,12 @@ let ignoreList = [];
 let activePrivateTab = null;
 let privateTabs = {};
 
-// DOM elements
 const $ = (sel) => document.querySelector(sel);
 const $$ = (sel) => document.querySelectorAll(sel);
 
 // Screens
+const connectingScreen = $('#connectingScreen');
+const connectingStatus = $('#connectingStatus');
 const loginScreen = $('#loginScreen');
 const chatScreen = $('#chatScreen');
 
@@ -40,7 +41,6 @@ const userInfo = $('#userInfo');
 const usersList = $('#usersList');
 const usersHeader = $('#usersHeader');
 const channelChatArea = $('#channelChatArea');
-const welcomeMessage = $('#welcomeMessage');
 
 // Private
 const privateChatArea = $('#privateChatArea');
@@ -57,7 +57,7 @@ const operButtons = $('#operButtons');
 const textSizeSlider = $('#textSizeSlider');
 const textSizeValue = $('#textSizeValue');
 
-// Emoticon definitions
+// Emoticons
 const emoticons = {
   ':-)': '😊', ':)': '😊', ':-(': '😢', ':(': '😢',
   ';-)': '😉', ';)': '😉', ';-(': '😭', ';(': '😭',
@@ -90,7 +90,6 @@ function scrollToBottom(el) {
   el.scrollTop = el.scrollHeight;
 }
 
-// Level helpers
 function getLevelClass(level) {
   const map = { 0: 'normal', 1: 'oper', 2: 'super', 3: 'cyber', 4: 'admin', 5: 'creator' };
   return map[level] || 'normal';
@@ -100,6 +99,34 @@ function getLevelName(level) {
   const map = { 0: 'Normaal', 1: 'Oper', 2: 'Super', 3: 'Cyber', 4: 'Admin', 5: 'Creator' };
   return map[level] || 'Normaal';
 }
+
+function getCurrentTime() {
+  const d = new Date();
+  return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}:${String(d.getSeconds()).padStart(2,'0')}`;
+}
+
+// ============================================
+// CONNECTING SCREEN
+// ============================================
+
+socket.on('connect', () => {
+  connectingScreen.style.display = 'none';
+  loginScreen.style.display = 'flex';
+});
+
+socket.on('connect_error', () => {
+  connectingStatus.textContent = 'Kan geen verbinding maken... opnieuw proberen';
+  connectingStatus.style.color = '#cc0000';
+});
+
+socket.io.on('reconnect', () => {
+  connectingStatus.textContent = 'Verbinding hersteld!';
+  connectingStatus.style.color = '#00b894';
+});
+
+// ============================================
+// UI EVENT LISTENERS
+// ============================================
 
 // Tab switching
 $$('.tabBtn').forEach(btn => {
@@ -126,6 +153,11 @@ $('#showLoginBtn').addEventListener('click', () => {
 textSizeSlider.addEventListener('input', () => {
   textSizeValue.textContent = textSizeSlider.value;
   messagesList.style.fontSize = textSizeSlider.value + 'px';
+});
+
+// Welcome popup close
+$('#closeWelcomeBtn').addEventListener('click', () => {
+  $('#welcomePopup').style.display = 'none';
 });
 
 // LOGIN
@@ -206,11 +238,6 @@ messageForm.addEventListener('submit', (e) => {
   messageInput.value = '';
 });
 
-function getCurrentTime() {
-  const d = new Date();
-  return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}:${String(d.getSeconds()).padStart(2,'0')}`;
-}
-
 // CREATE CHANNEL
 $('#createChannelBtn').addEventListener('click', () => {
   $('#createChannelDialog').style.display = 'flex';
@@ -276,7 +303,7 @@ $('#uploadImageBtn').addEventListener('click', () => {
   const formData = new FormData();
   formData.append('profileImage', fileInput.files[0]);
   formData.append('nickname', thisUser.nickname);
-  fetch('/upload', { method: 'POST', body: formData })
+  fetch(CHAT_SERVER_URL + '/upload', { method: 'POST', body: formData })
     .then(r => r.json())
     .then(data => {
       if (data.success) addServerMessage('Profielafbeelding geupload: ' + data.filename);
@@ -399,19 +426,16 @@ socket.on('user updated', (msg) => {
 
 socket.on('changed channel', (channelName) => {
   if (!channelName) {
-    // Kicked from channel, clear
     thisUser.currentChannel = '';
     messagesList.innerHTML = '';
     channelUsers = [];
     renderUsersList();
-    welcomeMessage.style.display = 'block';
     updateChannelInfo();
     return;
   }
   thisUser.currentChannel = channelName;
   messagesList.innerHTML = '';
   channelUsers = [];
-  welcomeMessage.style.display = 'none';
   deselectUser();
   activePrivateTab = null;
   updateChannelInfo();
@@ -469,8 +493,10 @@ function showError(el, msg) {
 function enterChat() {
   loginScreen.style.display = 'none';
   chatScreen.style.display = 'flex';
-  userInfo.textContent = thisUser.nickname;
+  userInfo.textContent = 'Welkom ' + thisUser.nickname;
   messageInput.focus();
+
+  $('#welcomePopup').style.display = 'flex';
 
   if (thisUser.guest) {
     $('#uploadImageBtn').style.display = 'none';
@@ -506,7 +532,7 @@ function updateChannelInfo() {
   const ch = channels.find(c => c.name === thisUser.currentChannel);
   const topic = ch ? ch.topic : '';
   const count = ch ? (ch.currentUsers || 0) : 0;
-  channelInfo.innerHTML = `${thisUser.nickname} op kanaal <strong>${thisUser.currentChannel}</strong> met ${count} van ${totalUsers} chatters ${topic ? '- ' + replaceEmoticons(topic) : ''}`;
+  channelInfo.innerHTML = `<strong>${thisUser.currentChannel}</strong> - ${count} van ${totalUsers} chatters ${topic ? '| ' + replaceEmoticons(topic) : ''}`;
 }
 
 function renderUsersList() {

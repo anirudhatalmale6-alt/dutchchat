@@ -4,11 +4,20 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>DutchChat</title>
-  <link rel="stylesheet" href="/static/css/style.css">
+  <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
+  <!-- CONNECTING SCREEN -->
+  <div id="connectingScreen">
+    <div class="connectingContent">
+      <h1>DutchChat</h1>
+      <div class="spinner"></div>
+      <p id="connectingStatus">Verbinding maken met chat server...</p>
+    </div>
+  </div>
+
   <!-- LOGIN SCREEN -->
-  <div id="loginScreen">
+  <div id="loginScreen" style="display:none;">
     <div id="loginContainer">
       <div id="loginLogo">
         <h1>DutchChat</h1>
@@ -101,24 +110,10 @@
 
     <!-- MAIN CONTENT -->
     <div id="mainContent">
-      <!-- LEFT: CHANNELS -->
-      <div id="channelsPanel">
-        <div class="panelHeader">
-          <span>Kanalen</span>
-          <button id="createChannelBtn" class="iconBtn" title="Nieuw kanaal">+</button>
-        </div>
-        <ul id="channelsList"></ul>
-      </div>
-
-      <!-- CENTER: CHAT -->
+      <!-- LEFT/CENTER: CHAT -->
       <div id="chatPanel">
         <!-- Channel Chat -->
         <div id="channelChatArea">
-          <div id="welcomeMessage">
-            <p>Welkom bij <strong>DutchChat</strong> - De Nederlandse Chatbox!</p>
-            <p>Kies een kanaal om te beginnen met chatten.</p>
-            <p class="rules">Het is niet toegestaan om discriminerende, racistische, kwetsende of pornografische uitspraken te doen.</p>
-          </div>
           <ul id="messages"></ul>
         </div>
 
@@ -138,96 +133,127 @@
         </div>
       </div>
 
-      <!-- RIGHT: USERS / OPTIONS -->
+      <!-- RIGHT: CHANNELS + USERS -->
       <div id="rightPanel">
-        <div id="rightTabs">
-          <button class="tabBtn active" data-tab="usersTab">Gebruikers</button>
-          <button class="tabBtn" data-tab="optionsTab">Opties</button>
-          <button class="tabBtn" data-tab="searchTab">Zoeken</button>
+        <!-- Channels Section (always visible) -->
+        <div id="channelsSection">
+          <div class="panelHeader panelHeaderRed">
+            <span>Kanalen</span>
+          </div>
+          <ul id="channelsList"></ul>
+          <button id="createChannelBtn" class="newChannelBtn">+ NIEUW KANAAL</button>
         </div>
 
-        <!-- Users Tab -->
-        <div id="usersTab" class="tabContent active">
-          <div class="panelHeader"><span id="usersHeader">Gebruikers</span></div>
-          <ul id="usersList"></ul>
-          <ul id="searchUsersList" style="display:none;"></ul>
-          <div id="userActions" style="display:none;">
-            <div id="selectedUserInfo"></div>
-            <div id="modButtons">
-              <button id="privateBtn" class="btn btnSmall">Prive</button>
-              <button id="ignoreBtn" class="btn btnSmall">Negeren</button>
-            </div>
-            <div id="operButtons" style="display:none;">
-              <button id="operBtn" class="btn btnSmall btnGreen">Oper</button>
-              <button id="superBtn" class="btn btnSmall btnGreen">Super</button>
-              <button id="kickBtn" class="btn btnSmall btnRed">Kick</button>
-              <button id="banBtn" class="btn btnSmall btnRed">Ban</button>
-              <button id="silentBtn" class="btn btnSmall btnOrange">Silent</button>
-              <button id="unsilentBtn" class="btn btnSmall btnGreen">Unsilent</button>
+        <!-- Users/Options/Search Section (tabbed) -->
+        <div id="usersSection">
+          <div id="rightTabs">
+            <button class="tabBtn active" data-tab="usersTab">Gebruikers</button>
+            <button class="tabBtn" data-tab="optionsTab">Opties</button>
+            <button class="tabBtn" data-tab="searchTab">Zoeken</button>
+          </div>
+
+          <!-- Users Tab -->
+          <div id="usersTab" class="tabContent active">
+            <div class="panelSubHeader"><span id="usersHeader">Gebruikers</span></div>
+            <ul id="usersList"></ul>
+            <ul id="searchUsersList" style="display:none;"></ul>
+            <div id="userActions" style="display:none;">
+              <div id="selectedUserInfo"></div>
+              <div id="modButtons">
+                <button id="privateBtn" class="btn btnSmall">Prive</button>
+                <button id="ignoreBtn" class="btn btnSmall">Negeren</button>
+              </div>
+              <div id="operButtons" style="display:none;">
+                <button id="operBtn" class="btn btnSmall btnGreen">Oper</button>
+                <button id="superBtn" class="btn btnSmall btnGreen">Super</button>
+                <button id="kickBtn" class="btn btnSmall btnRed">Kick</button>
+                <button id="banBtn" class="btn btnSmall btnRed">Ban</button>
+                <button id="silentBtn" class="btn btnSmall btnOrange">Silent</button>
+                <button id="unsilentBtn" class="btn btnSmall btnGreen">Unsilent</button>
+              </div>
             </div>
           </div>
-        </div>
 
-        <!-- Options Tab -->
-        <div id="optionsTab" class="tabContent">
-          <div class="panelHeader"><span>Opties</span></div>
-          <div class="optionsList">
-            <label class="optionItem">
-              <input type="checkbox" id="noStatusMessages"> Geen statusberichten
-            </label>
-            <label class="optionItem">
-              <input type="checkbox" id="textStandardColor"> Tekst in standaard kleur
-            </label>
-            <label class="optionItem">
-              <input type="checkbox" id="ignorePrivateMessages"> Prive berichten negeren
-            </label>
-            <label class="optionItem">
-              <input type="checkbox" id="privateWindows" checked> Prive vensters
-            </label>
-            <div class="optionItem">
-              <label>Tekstgrootte: <span id="textSizeValue">13</span>px</label>
-              <input type="range" id="textSizeSlider" min="10" max="22" value="13">
-            </div>
-            <div class="optionItem">
-              <label>Profielafbeelding</label>
-              <input type="file" id="profileImageInput" accept=".jpg,.jpeg,.png,.gif">
-              <button id="uploadImageBtn" class="btn btnSmall">Upload</button>
+          <!-- Options Tab -->
+          <div id="optionsTab" class="tabContent">
+            <div class="panelSubHeader"><span>Opties</span></div>
+            <div class="optionsList">
+              <label class="optionItem">
+                <input type="checkbox" id="noStatusMessages"> Geen statusberichten
+              </label>
+              <label class="optionItem">
+                <input type="checkbox" id="textStandardColor"> Tekst in standaard kleur
+              </label>
+              <label class="optionItem">
+                <input type="checkbox" id="ignorePrivateMessages"> Prive berichten negeren
+              </label>
+              <label class="optionItem">
+                <input type="checkbox" id="privateWindows" checked> Prive vensters
+              </label>
+              <div class="optionItem">
+                <label>Tekstgrootte: <span id="textSizeValue">13</span>px</label>
+                <input type="range" id="textSizeSlider" min="10" max="22" value="13">
+              </div>
+              <div class="optionItem">
+                <label>Profielafbeelding</label>
+                <input type="file" id="profileImageInput" accept=".jpg,.jpeg,.png,.gif">
+                <button id="uploadImageBtn" class="btn btnSmall">Upload</button>
+              </div>
             </div>
           </div>
-        </div>
 
-        <!-- Search Tab -->
-        <div id="searchTab" class="tabContent">
-          <div class="panelHeader"><span>Zoeken</span></div>
-          <form id="searchForm">
-            <div class="formGroup">
-              <label>Zoek op:</label>
-              <label class="radioItem"><input type="radio" name="searchOn" value="Channel" checked> Kanaal</label>
-              <label class="radioItem"><input type="radio" name="searchOn" value="Whole"> Hele chat</label>
-            </div>
-            <div class="formGroup">
-              <label>Geslacht:</label>
-              <label class="radioItem"><input type="radio" name="searchGender" value="male"> Man</label>
-              <label class="radioItem"><input type="radio" name="searchGender" value="female"> Vrouw</label>
-              <label class="radioItem"><input type="radio" name="searchGender" value="both" checked> Beide</label>
-            </div>
-            <div class="formGroup">
-              <label for="searchName">Naam:</label>
-              <input type="text" id="searchName" placeholder="Zoek op naam">
-            </div>
-            <div class="formButtons">
-              <button type="submit" class="btn btnSmall btnPrimary">Zoeken</button>
-              <button type="button" id="cancelSearchBtn" class="btn btnSmall btnSecondary">Annuleer</button>
-            </div>
-          </form>
+          <!-- Search Tab -->
+          <div id="searchTab" class="tabContent">
+            <div class="panelSubHeader"><span>Zoeken</span></div>
+            <form id="searchForm">
+              <div class="formGroup">
+                <label>Zoek op:</label>
+                <label class="radioItem"><input type="radio" name="searchOn" value="Channel" checked> Kanaal</label>
+                <label class="radioItem"><input type="radio" name="searchOn" value="Whole"> Hele chat</label>
+              </div>
+              <div class="formGroup">
+                <label>Geslacht:</label>
+                <label class="radioItem"><input type="radio" name="searchGender" value="male"> Man</label>
+                <label class="radioItem"><input type="radio" name="searchGender" value="female"> Vrouw</label>
+                <label class="radioItem"><input type="radio" name="searchGender" value="both" checked> Beide</label>
+              </div>
+              <div class="formGroup">
+                <label for="searchName">Naam:</label>
+                <input type="text" id="searchName" placeholder="Zoek op naam">
+              </div>
+              <div class="formButtons">
+                <button type="submit" class="btn btnSmall btnPrimary">Zoeken</button>
+                <button type="button" id="cancelSearchBtn" class="btn btnSmall btnSecondary">Annuleer</button>
+              </div>
+            </form>
+          </div>
         </div>
+      </div>
+    </div>
+
+    <!-- WELCOME POPUP -->
+    <div id="welcomePopup" class="dialog" style="display:none;">
+      <div class="dialogContent welcomeDialog">
+        <div class="dialogHeader">Welkom bij DutchChat</div>
+        <div class="welcomeBody">
+          <p>Welkom in de chat! Houd je aan de volgende regels:</p>
+          <ul>
+            <li>Het is niet toegestaan om discriminerende, racistische, kwetsende of pornografische uitspraken te doen.</li>
+            <li>Respecteer andere gebruikers en hun privacy.</li>
+            <li>Spam is niet toegestaan.</li>
+            <li>Deel geen persoonlijke gegevens van anderen.</li>
+            <li>Luister naar de instructies van moderators en admins.</li>
+          </ul>
+          <p class="welcomeNote">Door verder te gaan ga je akkoord met deze regels.</p>
+        </div>
+        <button id="closeWelcomeBtn" class="btn btnPrimary welcomeCloseBtn">Akkoord &amp; Doorgaan</button>
       </div>
     </div>
 
     <!-- CREATE CHANNEL DIALOG -->
     <div id="createChannelDialog" class="dialog" style="display:none;">
       <div class="dialogContent">
-        <h3>Nieuw Kanaal</h3>
+        <div class="dialogHeader">Nieuw Kanaal</div>
         <form id="createChannelForm">
           <div class="formGroup">
             <label for="newChannelName">Naam:</label>
@@ -253,7 +279,7 @@
     <!-- CHAT LOG DIALOG -->
     <div id="clogDialog" class="dialog" style="display:none;">
       <div class="dialogContent dialogWide">
-        <h3>Chat Log</h3>
+        <div class="dialogHeader">Chat Log</div>
         <div id="clogContent"></div>
         <button id="closeClogBtn" class="btn btnSecondary">Sluiten</button>
       </div>
@@ -269,7 +295,8 @@
     </div>
   </div>
 
-  <script src="/socket.io/socket.io.js"></script>
-  <script src="/static/js/client.js"></script>
+  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/client.js"></script>
 </body>
 </html>

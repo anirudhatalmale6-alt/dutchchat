@@ -1,20 +1,21 @@
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
 :root {
-  --bg-dark: #0d0d1a;
-  --bg-panel: #151528;
-  --bg-input: #1a1a35;
-  --bg-header: #1e1e3a;
-  --bg-hover: #252550;
-  --bg-active: #2d2d5c;
-  --border: #2a2a4e;
-  --text: #e0e0ff;
-  --text-dim: #8888aa;
+  --bg-dark: #0a0a0a;
+  --bg-panel: #111111;
+  --bg-input: #181818;
+  --bg-header: #1a1a1a;
+  --bg-hover: #1e1e1e;
+  --bg-active: #252525;
+  --border: #2a2a2a;
+  --text: #cccccc;
+  --text-dim: #888888;
   --text-bright: #ffffff;
-  --accent: #6c5ce7;
-  --accent-hover: #7f70f0;
+  --accent: #cc0000;
+  --accent-hover: #ee0000;
+  --accent-dark: #990000;
   --green: #00b894;
-  --red: #e74c3c;
+  --red: #cc0000;
   --orange: #f39c12;
   --blue: #3498db;
   --server-msg: #f1c40f;
@@ -32,7 +33,7 @@ html, body {
 /* SCROLLBAR */
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: var(--bg-dark); }
-::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
 
 /* BUTTONS */
@@ -50,25 +51,11 @@ html, body {
 .btnPrimary { background: var(--accent); color: #fff; }
 .btnPrimary:hover { background: var(--accent-hover); }
 .btnSecondary { background: var(--bg-hover); color: var(--text); border: 1px solid var(--border); }
-.btnSend { background: var(--accent); color: #fff; padding: 8px 20px; }
+.btnSend { background: var(--accent); color: #fff; padding: 8px 20px; border-radius: 4px; }
 .btnSmall { padding: 5px 10px; font-size: 12px; margin: 2px; }
 .btnGreen { background: var(--green); color: #fff; }
 .btnRed { background: var(--red); color: #fff; }
 .btnOrange { background: var(--orange); color: #000; }
-.iconBtn {
-  width: 26px; height: 26px;
-  border: 1px solid var(--border);
-  background: var(--bg-hover);
-  color: var(--text);
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 16px;
-  line-height: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.iconBtn:hover { background: var(--accent); }
 
 /* FORMS */
 input[type="text"], input[type="password"], input[type="email"], input[type="number"], select, textarea {
@@ -93,13 +80,53 @@ label { display: block; margin-bottom: 4px; color: var(--text-dim); font-size: 1
 .radioItem { display: inline-flex; align-items: center; gap: 4px; margin-right: 12px; font-size: 12px; color: var(--text); cursor: pointer; }
 .radioItem input[type="radio"] { accent-color: var(--accent); }
 
-/* LOGIN SCREEN */
+/* ============================================
+   CONNECTING SCREEN
+   ============================================ */
+#connectingScreen {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #000;
+}
+.connectingContent {
+  text-align: center;
+}
+.connectingContent h1 {
+  font-size: 36px;
+  color: var(--accent);
+  font-weight: 700;
+  letter-spacing: 2px;
+  margin-bottom: 24px;
+}
+.connectingContent p {
+  color: var(--text-dim);
+  font-size: 14px;
+  margin-top: 16px;
+}
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid #333;
+  border-top: 3px solid var(--accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin: 0 auto;
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ============================================
+   LOGIN SCREEN
+   ============================================ */
 #loginScreen {
   height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #0d0d1a 0%, #1a1a35 50%, #0d0d1a 100%);
+  background: #000;
 }
 #loginContainer { width: 380px; }
 #loginLogo {
@@ -127,23 +154,26 @@ label { display: block; margin-bottom: 4px; color: var(--text-dim); font-size: 1
   border-bottom: 1px solid var(--border);
 }
 
-/* CHAT SCREEN LAYOUT */
+/* ============================================
+   CHAT SCREEN LAYOUT
+   ============================================ */
 #chatScreen { display: flex; flex-direction: column; height: 100%; }
 
-/* TOP BAR */
+/* TOP BAR - RED */
 #topBar {
   display: flex;
   align-items: center;
   height: 42px;
-  background: var(--bg-header);
-  border-bottom: 1px solid var(--border);
+  background: var(--accent);
+  border-bottom: 1px solid var(--accent-dark);
   padding: 0 12px;
   flex-shrink: 0;
 }
 #topBarLeft { flex: 0 0 auto; }
-#logoText { font-size: 16px; font-weight: 700; color: var(--accent); letter-spacing: 1px; }
-#topBarCenter { flex: 1; text-align: center; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-size: 12px; color: var(--text-dim); padding: 0 12px; }
-#topBarRight { flex: 0 0 auto; font-size: 12px; color: var(--text-dim); }
+#logoText { font-size: 16px; font-weight: 700; color: #fff; letter-spacing: 1px; }
+#topBarCenter { flex: 1; text-align: center; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-size: 12px; color: rgba(255,255,255,0.8); padding: 0 12px; }
+#topBarCenter strong { color: #fff; }
+#topBarRight { flex: 0 0 auto; font-size: 12px; color: #fff; font-weight: 600; }
 
 /* MAIN CONTENT */
 #mainContent {
@@ -152,62 +182,7 @@ label { display: block; margin-bottom: 4px; color: var(--text-dim); font-size: 1
   overflow: hidden;
 }
 
-/* CHANNELS PANEL */
-#channelsPanel {
-  width: 180px;
-  background: var(--bg-panel);
-  border-right: 1px solid var(--border);
-  display: flex;
-  flex-direction: column;
-  flex-shrink: 0;
-}
-.panelHeader {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 8px 10px;
-  background: var(--bg-header);
-  border-bottom: 1px solid var(--border);
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--text-dim);
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
-#channelsList {
-  flex: 1;
-  overflow-y: auto;
-  list-style: none;
-  padding: 4px 0;
-}
-#channelsList li {
-  padding: 6px 10px;
-  cursor: pointer;
-  font-size: 13px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-left: 3px solid transparent;
-  transition: all 0.15s;
-}
-#channelsList li:hover { background: var(--bg-hover); }
-#channelsList li.active {
-  background: var(--bg-active);
-  border-left-color: var(--accent);
-  color: var(--text-bright);
-}
-#channelsList li .channelName { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-#channelsList li .channelCount {
-  font-size: 11px;
-  color: var(--text-dim);
-  background: var(--bg-dark);
-  padding: 1px 6px;
-  border-radius: 8px;
-  min-width: 20px;
-  text-align: center;
-}
-
-/* CHAT PANEL */
+/* CHAT PANEL (left/center) */
 #chatPanel {
   flex: 1;
   display: flex;
@@ -218,17 +193,8 @@ label { display: block; margin-bottom: 4px; color: var(--text-dim); font-size: 1
   flex: 1;
   overflow-y: auto;
   padding: 8px 12px;
+  background: var(--bg-dark);
 }
-#welcomeMessage {
-  padding: 16px;
-  background: var(--bg-panel);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  margin-bottom: 8px;
-  text-align: center;
-}
-#welcomeMessage p { margin-bottom: 6px; }
-#welcomeMessage .rules { font-size: 11px; color: var(--text-dim); font-style: italic; }
 #messages {
   list-style: none;
 }
@@ -298,10 +264,10 @@ label { display: block; margin-bottom: 4px; color: var(--text-dim); font-size: 1
 #privateMessages .privateMsgList.active { display: block; }
 #privateMessages .privateMsgList li { padding: 2px 0; line-height: 1.5; }
 
-/* MESSAGE BAR */
+/* MESSAGE BAR - LIGHT/WHITE */
 #messageBar {
-  background: var(--bg-header);
-  border-top: 1px solid var(--border);
+  background: #e8e8e8;
+  border-top: 1px solid #ccc;
   padding: 8px 12px;
   flex-shrink: 0;
 }
@@ -314,30 +280,126 @@ label { display: block; margin-bottom: 4px; color: var(--text-dim); font-size: 1
   flex: 1;
   padding: 10px 14px;
   font-size: 13px;
-  background: var(--bg-input);
-  border: 1px solid var(--border);
+  background: #ffffff;
+  border: 1px solid #ccc;
   border-radius: 6px;
-  color: var(--text-bright);
+  color: #222;
 }
 #messageInput:focus { border-color: var(--accent); }
+#messageInput::placeholder { color: #999; }
 #colorPicker {
   width: 34px;
   height: 34px;
-  border: 1px solid var(--border);
+  border: 1px solid #ccc;
   border-radius: 4px;
   cursor: pointer;
-  background: transparent;
+  background: #fff;
   padding: 2px;
 }
 
-/* RIGHT PANEL */
+/* ============================================
+   RIGHT PANEL
+   ============================================ */
 #rightPanel {
-  width: 220px;
+  width: 240px;
   background: var(--bg-panel);
   border-left: 1px solid var(--border);
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
+}
+
+/* Channels Section */
+#channelsSection {
+  display: flex;
+  flex-direction: column;
+  max-height: 45%;
+  border-bottom: 1px solid var(--border);
+}
+.panelHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  background: var(--bg-header);
+  border-bottom: 1px solid var(--border);
+}
+.panelHeaderRed {
+  background: var(--accent);
+  color: #fff;
+  border-bottom: 1px solid var(--accent-dark);
+}
+.panelSubHeader {
+  display: flex;
+  align-items: center;
+  padding: 6px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  background: var(--bg-header);
+  border-bottom: 1px solid var(--border);
+}
+#channelsList {
+  flex: 1;
+  overflow-y: auto;
+  list-style: none;
+  padding: 2px 0;
+}
+#channelsList li {
+  padding: 5px 10px;
+  cursor: pointer;
+  font-size: 13px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-left: 3px solid transparent;
+  transition: all 0.15s;
+}
+#channelsList li:hover { background: var(--bg-hover); }
+#channelsList li.active {
+  background: var(--bg-active);
+  border-left-color: var(--accent);
+  color: var(--text-bright);
+}
+#channelsList li .channelName { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#channelsList li .channelCount {
+  font-size: 11px;
+  color: var(--text-dim);
+  background: var(--bg-dark);
+  padding: 1px 6px;
+  border-radius: 8px;
+  min-width: 20px;
+  text-align: center;
+}
+.newChannelBtn {
+  display: block;
+  width: 100%;
+  padding: 7px 10px;
+  background: var(--accent-dark);
+  color: #fff;
+  border: none;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.newChannelBtn:hover { background: var(--accent); }
+
+/* Users Section (tabbed) */
+#usersSection {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 #rightTabs {
   display: flex;
@@ -347,7 +409,7 @@ label { display: block; margin-bottom: 4px; color: var(--text-dim); font-size: 1
 }
 .tabBtn {
   flex: 1;
-  padding: 8px 4px;
+  padding: 7px 4px;
   background: none;
   border: none;
   color: var(--text-dim);
@@ -366,10 +428,10 @@ label { display: block; margin-bottom: 4px; color: var(--text-dim); font-size: 1
   list-style: none;
   flex: 1;
   overflow-y: auto;
-  padding: 4px 0;
+  padding: 2px 0;
 }
 #usersList li, #searchUsersList li {
-  padding: 5px 10px;
+  padding: 4px 10px;
   cursor: pointer;
   font-size: 12px;
   display: flex;
@@ -435,11 +497,13 @@ label { display: block; margin-bottom: 4px; color: var(--text-dim); font-size: 1
 /* SEARCH TAB */
 #searchTab form { padding: 10px; }
 
-/* DIALOGS */
+/* ============================================
+   DIALOGS
+   ============================================ */
 .dialog {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(0,0,0,0.6);
+  background: rgba(0,0,0,0.7);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -449,12 +513,24 @@ label { display: block; margin-bottom: 4px; color: var(--text-dim); font-size: 1
   background: var(--bg-panel);
   border: 1px solid var(--border);
   border-radius: 8px;
-  padding: 24px;
-  width: 350px;
+  padding: 0;
+  width: 380px;
   max-height: 80vh;
   overflow-y: auto;
 }
-.dialogContent h3 { margin-bottom: 16px; color: var(--text-bright); }
+.dialogHeader {
+  background: var(--accent);
+  color: #fff;
+  padding: 12px 16px;
+  font-size: 16px;
+  font-weight: 700;
+  border-radius: 8px 8px 0 0;
+}
+.dialogContent form,
+.dialogContent > .btn {
+  margin: 16px;
+}
+.dialogContent .formGroup { margin-bottom: 10px; }
 .dialogWide { width: 600px; }
 #clogContent {
   max-height: 50vh;
@@ -462,16 +538,42 @@ label { display: block; margin-bottom: 4px; color: var(--text-dim); font-size: 1
   background: var(--bg-dark);
   padding: 12px;
   border-radius: 4px;
-  margin-bottom: 12px;
+  margin: 16px;
   font-size: 12px;
   line-height: 1.6;
+}
+
+/* WELCOME POPUP */
+.welcomeDialog { width: 440px; }
+.welcomeBody {
+  padding: 16px;
+  font-size: 13px;
+  line-height: 1.7;
+}
+.welcomeBody p { margin-bottom: 10px; }
+.welcomeBody ul {
+  margin: 0 0 12px 20px;
+  list-style: disc;
+}
+.welcomeBody ul li { margin-bottom: 6px; }
+.welcomeNote {
+  font-size: 11px;
+  color: var(--text-dim);
+  font-style: italic;
+}
+.welcomeCloseBtn {
+  display: block;
+  width: calc(100% - 32px);
+  margin: 0 16px 16px 16px;
+  padding: 10px;
+  text-align: center;
 }
 
 /* DISCONNECT OVERLAY */
 #disconnectOverlay {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(0,0,0,0.8);
+  background: rgba(0,0,0,0.85);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -497,18 +599,16 @@ label { display: block; margin-bottom: 4px; color: var(--text-dim); font-size: 1
   z-index: 50;
   font-size: 12px;
   line-height: 1.8;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.5);
   pointer-events: none;
 }
 .userPopup .popupNick { font-weight: 700; color: var(--accent); font-size: 14px; }
 
-/* RESPONSIVE (small screens) */
+/* RESPONSIVE */
 @media (max-width: 800px) {
-  #channelsPanel { width: 140px; }
-  #rightPanel { width: 180px; }
+  #rightPanel { width: 200px; }
 }
 @media (max-width: 600px) {
-  #channelsPanel { display: none; }
   #rightPanel { display: none; }
   #topBarCenter { display: none; }
 }
