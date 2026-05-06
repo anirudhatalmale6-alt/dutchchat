@@ -252,6 +252,15 @@ html, body {
 #messages { list-style: none; }
 #messages li { padding: 2px 0; word-wrap: break-word; line-height: 1.5; }
 #messages li.serverMsg { color: #f1c40f; font-style: italic; }
+#messages li.channelWarning {
+  background: #222;
+  color: #ccc;
+  padding: 8px 12px;
+  margin: 4px 0;
+  font-size: 12px;
+  line-height: 1.6;
+  border-left: 3px solid #666;
+}
 #messages li .timestamp { color: #888; font-size: 11px; }
 #messages li .sender { font-weight: 600; }
 #messages li .sender.admin { color: #cc0000; font-weight: 700; }
@@ -492,24 +501,26 @@ html, body {
 }
 .actionRow {
   display: flex;
-  gap: 2px;
-  margin-bottom: 2px;
+  gap: 3px;
+  margin-bottom: 3px;
 }
 .actionRowMod { display: none; }
 .actionRowMod.visible { display: flex; }
 .actionBtn {
   flex: 1;
-  padding: 5px 2px;
-  background: #e8e8e8;
+  padding: 6px 4px;
+  background: #e0e0e0;
   color: #333;
-  border: 1px solid #bbb;
-  font-size: 10px;
-  font-weight: 600;
+  border: 1px solid #aaa;
+  border-radius: 2px;
+  font-size: 11px;
+  font-weight: 700;
   cursor: pointer;
   text-align: center;
+  letter-spacing: 0.3px;
   transition: background 0.1s;
 }
-.actionBtn:hover { background: #ddd; color: #000; }
+.actionBtn:hover { background: #ccc; color: #000; }
 .actionLink {
   text-align: center;
   padding: 4px 0 2px 0;

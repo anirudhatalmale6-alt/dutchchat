@@ -429,12 +429,14 @@ class Channel {
 
     const con = findConnectionFromUser(user);
     if (con) {
-      if (this.isStatic === 0) {
-        con.socket.emit('server message',
-          user.nickname + ' welkom op kanaal (' + user.currentChannel + ')<br />dit kanaal is aangemaakt door: ' + this.creator
-        );
+      if (this.isStatic === 1) {
+        con.socket.emit('server message', '★Welkom op de DutchChat chat server');
       }
-      con.socket.emit('server message', 'Kanaal Topic: ' + this.topic);
+      con.socket.emit('server message', 'kanaal topic: ' + this.topic);
+      if (this.isStatic === 0) {
+        con.socket.emit('server message', 'kanaal aangemaakt door ' + this.creator);
+        con.socket.emit('channel warning', 'Dit kanaal is niet gemaakt door DutchChat.\nDe maker van dit kanaal heeft het recht om je permanent of tijdelijk van dit kanaal te verwijderen.');
+      }
     }
   }
 

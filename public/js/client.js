@@ -471,6 +471,10 @@ socket.on('server message', (msg) => {
   addServerMessage(msg);
 });
 
+socket.on('channel warning', (msg) => {
+  addChannelWarning(msg);
+});
+
 socket.on('channel users list', (msg) => {
   channelUsers = JSON.parse(msg);
   const me = channelUsers.find(u => u.nickname === thisUser.nickname);
@@ -488,7 +492,13 @@ socket.on('user joined channel', (msg) => {
   const existing = channelUsers.find(cu => cu.nickname === u.nickname);
   if (!existing) channelUsers.push(u);
   else Object.assign(existing, u);
+  if (thisUser && u.nickname === thisUser.nickname) {
+    thisUser.currentChannelUserLevel = u.currentChannelUserLevel;
+    thisUser.silenced = u.silenced;
+  }
   renderUsersList();
+  updateModButtons();
+  updateWelcomeBar();
 });
 
 socket.on('user left channel', (nickname) => {
@@ -806,7 +816,19 @@ function addChannelMessage(m) {
 function addServerMessage(msg) {
   const li = document.createElement('li');
   li.className = 'serverMsg';
-  li.innerHTML = '&lt; ' + replaceEmoticons(msg) + ' &gt;';
+  if (msg.startsWith('★')) {
+    li.innerHTML = replaceEmoticons(msg);
+  } else {
+    li.innerHTML = '&lt; ' + replaceEmoticons(msg) + ' &gt;';
+  }
+  messagesList.appendChild(li);
+  scrollToBottom(channelChatArea);
+}
+
+function addChannelWarning(msg) {
+  const li = document.createElement('li');
+  li.className = 'channelWarning';
+  li.innerHTML = escapeHtml(msg).replace(/\n/g, '<br>');
   messagesList.appendChild(li);
   scrollToBottom(channelChatArea);
 }
