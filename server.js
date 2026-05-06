@@ -467,29 +467,13 @@ class Channel {
     // Send userlist to the joining user
     broadcastUserlistToChannel(this, user);
 
-    // Send channel info to joining user
     const con = findConnectionFromUser(user);
     if (con) {
-      sendEvent(con.socket, 'channelinfo', {
-        name: '',
-        channel: this.name,
-        info: {
-          topic: this.topic,
-          creator: this.creator,
-          password: this.password ? true : false,
-          secret: this.secret,
-          welcome_message: this.welcomeMessage,
-        },
-      });
-
       if (this.isStatic === 1) {
         sendEvent(con.socket, 'servermessage', {
           message: '★Welkom op de DutchChat chat server',
         });
       }
-      sendEvent(con.socket, 'servermessage', {
-        message: 'kanaal topic: ' + this.topic,
-      });
       if (this.isStatic === 0) {
         sendEvent(con.socket, 'servermessage', {
           message: 'kanaal aangemaakt door ' + this.creator,
@@ -2261,7 +2245,7 @@ function handleGetChannelInfo(socket, data) {
     const ch = findChannelByName(channelName);
     if (ch) {
       sendEvent(socket, 'channelinfo', {
-        name: thisCon.user.nickname,
+        name: '',
         channel: ch.name,
         info: {
           topic: ch.topic,
