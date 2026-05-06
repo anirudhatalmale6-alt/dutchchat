@@ -5,24 +5,23 @@ const socket = io(CHAT_SERVER_URL);
 let thisUser = null;
 let channels = [];
 let channelUsers = [];
-let searchUsersList = [];
 let totalUsers = 0;
 let clickedUser = null;
 let ignoreList = [];
 let activePrivateTab = null;
 let privateTabs = {};
 let loginTime = null;
-let idleTimer = null;
 let idleSeconds = 0;
 
 const $ = (sel) => document.querySelector(sel);
 const $$ = (sel) => document.querySelectorAll(sel);
 
-// Screens
+// Main wrapper & screens
 const connectingScreen = $('#connectingScreen');
 const connectingStatus = $('#connectingStatus');
-const loginScreen = $('#loginScreen');
-const chatScreen = $('#chatScreen');
+const mainWrapper = $('#mainWrapper');
+const loginOverlay = $('#loginOverlay');
+const topIcons = $('#topIcons');
 
 // Login
 const loginBox = $('#loginBox');
@@ -33,7 +32,9 @@ const loginError = $('#loginError');
 const registerError = $('#registerError');
 const loginButton = $('#loginButton');
 
-// Chat
+// Chat elements
+const chatSide = $('#chatSide');
+const rightPanel = $('#rightPanel');
 const channelsList = $('#channelsList');
 const messagesList = $('#messages');
 const messageForm = $('#messageForm');
@@ -49,12 +50,10 @@ const privateTabsEl = $('#privateTabs');
 const privateMessagesEl = $('#privateMessages');
 
 // Right panel
-const searchUsersListEl = $('#searchUsersList');
-const userActions = $('#userActions');
-const selectedUserInfoEl = $('#selectedUserInfo');
-const operButtons = $('#operButtons');
+const usersHeader = $('#usersHeader');
 const usersList = $('#usersList');
-const usersCount = $('#usersCount');
+const searchUsersListEl = $('#searchUsersList');
+const selectedUserInfoEl = $('#selectedUserInfo');
 
 // Text size
 const textSizeSlider = $('#textSizeSlider');
@@ -116,12 +115,12 @@ function formatDuration(secs) {
 }
 
 // ============================================
-// CONNECTING SCREEN
+// CONNECTING -> LOGIN -> CHAT flow
 // ============================================
 
 socket.on('connect', () => {
   connectingScreen.style.display = 'none';
-  loginScreen.style.display = 'flex';
+  mainWrapper.style.display = 'flex';
   loadRememberedLogin();
 });
 
@@ -183,6 +182,8 @@ function switchRightView(viewId) {
     $('#iconChannels').classList.add('active');
   } else if (viewId === 'usersView') {
     $('#iconUsers').classList.add('active');
+  } else if (viewId === 'searchView') {
+    $('#iconUsers').classList.add('active');
   } else if (viewId === 'settingsView') {
     $('#iconSettings').classList.add('active');
   }
@@ -204,13 +205,18 @@ $('#showLoginBtn').addEventListener('click', () => {
 
 // Text size slider
 textSizeSlider.addEventListener('input', () => {
-  textSizeValue.textContent = textSizeSlider.value;
-  messagesList.style.fontSize = textSizeSlider.value + 'px';
+  const px = parseInt(textSizeSlider.value);
+  textSizeValue.textContent = (px / 10).toFixed(1);
+  messagesList.style.fontSize = px + 'px';
 });
 
-// Color picker in settings syncs to hidden picker
-$('#colorPickerVisible').addEventListener('input', (e) => {
-  colorPicker.value = e.target.value;
+// Color palette clicks
+document.querySelectorAll('.colorSwatch').forEach(swatch => {
+  swatch.addEventListener('click', () => {
+    document.querySelectorAll('.colorSwatch').forEach(s => s.classList.remove('active'));
+    swatch.classList.add('active');
+    colorPicker.value = swatch.dataset.color;
+  });
 });
 
 // Welcome popup close
@@ -277,11 +283,9 @@ messageForm.addEventListener('submit', (e) => {
     const col = text.replace('/color ', '');
     if (/^#[0-9A-Fa-f]{3,6}$/.test(col)) {
       colorPicker.value = col.length === 4 ? col + col.slice(1) : col;
-      $('#colorPickerVisible').value = colorPicker.value;
     }
   } else if (text === '/nocolor') {
     colorPicker.value = '#ffffff';
-    $('#colorPickerVisible').value = '#ffffff';
   } else if (text === '/help') {
     addServerMessage('Beschikbare commando\'s: /join, /part, /kick, /ban, /unban, /op, /deop, /topic, /wall, /whois, /silent, /unsilent, /sban, /sunban, /skick, /kill, /list, /hide, /unhide, /clear, /smilies, /color, /nocolor, /quit, /version, /info');
   } else if (text.startsWith('/select ')) {
@@ -301,7 +305,7 @@ messageForm.addEventListener('submit', (e) => {
   messageInput.value = '';
 });
 
-// CREATE CHANNEL (inline in right panel)
+// CREATE CHANNEL
 $('#createChannelBtn').addEventListener('click', () => {
   switchRightView('newChannelView');
 });
@@ -322,6 +326,10 @@ $('#createChannelForm').addEventListener('submit', (e) => {
 });
 
 // SEARCH
+$('#searchChatterBtn').addEventListener('click', (e) => {
+  e.preventDefault();
+  switchRightView('searchView');
+});
 $('#searchForm').addEventListener('submit', (e) => {
   e.preventDefault();
   const searchOn = document.querySelector('input[name="searchOn"]:checked').value;
@@ -332,9 +340,10 @@ $('#searchForm').addEventListener('submit', (e) => {
 $('#cancelSearchBtn').addEventListener('click', () => {
   searchUsersListEl.style.display = 'none';
   usersList.style.display = 'block';
+  switchRightView('usersView');
 });
 
-// MOD BUTTONS
+// ACTION BUTTONS
 $('#privateBtn').addEventListener('click', () => { if (clickedUser) openPrivateTab(clickedUser.nickname); });
 $('#ignoreBtn').addEventListener('click', () => {
   if (clickedUser) {
@@ -349,10 +358,13 @@ $('#ignoreBtn').addEventListener('click', () => {
 });
 $('#operBtn').addEventListener('click', () => { if (clickedUser) socket.emit('command', `/op ${clickedUser.nickname} oper`); });
 $('#superBtn').addEventListener('click', () => { if (clickedUser) socket.emit('command', `/op ${clickedUser.nickname} super`); });
+$('#deopBtn').addEventListener('click', () => { if (clickedUser) socket.emit('command', `/deop ${clickedUser.nickname}`); });
 $('#kickBtn').addEventListener('click', () => { if (clickedUser) socket.emit('command', `/kick ${clickedUser.nickname}`); });
 $('#banBtn').addEventListener('click', () => { if (clickedUser) socket.emit('command', `/ban ${clickedUser.nickname}`); });
 $('#silentBtn').addEventListener('click', () => { if (clickedUser) socket.emit('command', `/silent ${clickedUser.nickname}`); });
-$('#unsilentBtn').addEventListener('click', () => { if (clickedUser) socket.emit('command', `/unsilent ${clickedUser.nickname}`); });
+$('#rulesBtn').addEventListener('click', () => {
+  $('#welcomePopup').style.display = 'flex';
+});
 
 // PROFILE IMAGE UPLOAD
 $('#uploadImageBtn').addEventListener('click', () => {
@@ -504,6 +516,7 @@ socket.on('changed channel', (channelName) => {
   activePrivateTab = null;
   updateStatusLine();
   highlightActiveChannel();
+  switchRightView('usersView');
 });
 
 socket.on('channel user numbers update', (msg) => {
@@ -517,6 +530,7 @@ socket.on('channel user numbers update', (msg) => {
     totalUsers += parseInt(count) || 0;
   }
   renderChannelList();
+  updateUsersHeader();
   updateStatusLine();
 });
 
@@ -555,8 +569,10 @@ function showError(el, msg) {
 }
 
 function enterChat() {
-  loginScreen.style.display = 'none';
-  chatScreen.style.display = 'flex';
+  loginOverlay.classList.add('hidden');
+  chatSide.classList.remove('hidden');
+  rightPanel.classList.remove('hidden');
+  topIcons.style.display = 'flex';
   welcomeBar.textContent = 'Welkom ' + thisUser.nickname;
   messageInput.focus();
 
@@ -571,6 +587,8 @@ function enterChat() {
     $('#uploadImageBtn').style.display = 'none';
     $('#profileImageInput').style.display = 'none';
   }
+
+  updateModButtons();
 }
 
 function updateStatusLine() {
@@ -586,11 +604,27 @@ function updateStatusLine() {
   userStatusLine.innerHTML = `&lt; ${nick} (${age}) = ${gender}, ${loc}, ${info}, ingelogd: <b>${loggedIn}</b>, inactief: <b>${idle}</b> &gt;`;
 }
 
+function updateUsersHeader() {
+  if (!thisUser || !thisUser.currentChannel) return;
+  const ch = channels.find(c => c.name === thisUser.currentChannel);
+  const channelCount = ch ? (ch.currentUsers || 0) : channelUsers.length;
+  usersHeader.textContent = `${thisUser.currentChannel} (${channelCount} van ${totalUsers})`;
+}
+
+function updateModButtons() {
+  const isMod = thisUser && (thisUser.currentChannelUserLevel >= 1 || thisUser.accountType >= 3);
+  $$('.actionRowMod').forEach(row => {
+    row.classList.toggle('visible', !!isMod);
+  });
+}
+
 function renderChannelList() {
   channelsList.innerHTML = '';
   for (const ch of channels) {
     const li = document.createElement('li');
-    li.innerHTML = `<span class="channelCount">${ch.currentUsers || 0}</span><span class="channelName">${ch.name}</span>`;
+    const count = ch.currentUsers || 0;
+    const countClass = count > 0 ? ' hasUsers' : '';
+    li.innerHTML = `<span class="channelCount${countClass}">${count}</span><span class="channelName">${ch.name}</span>`;
     li.dataset.channel = ch.name;
     if (thisUser && ch.name === thisUser.currentChannel) li.classList.add('active');
     li.addEventListener('click', () => {
@@ -615,7 +649,7 @@ function renderUsersList() {
     return a.nickname.localeCompare(b.nickname);
   });
 
-  usersCount.textContent = `(${sorted.length})`;
+  updateUsersHeader();
 
   for (const u of sorted) {
     const li = document.createElement('li');
@@ -636,11 +670,7 @@ function renderUsersList() {
     usersList.appendChild(li);
   }
 
-  if (thisUser && (thisUser.currentChannelUserLevel >= 1 || thisUser.accountType >= 3)) {
-    operButtons.style.display = 'flex';
-  } else {
-    operButtons.style.display = 'none';
-  }
+  updateModButtons();
 }
 
 function selectUser(u) {
@@ -649,7 +679,6 @@ function selectUser(u) {
     return;
   }
   clickedUser = u;
-  userActions.style.display = 'block';
   showUserInfo(u);
   renderUsersList();
 }
@@ -661,7 +690,7 @@ function selectUserByNick(nick) {
 
 function deselectUser() {
   clickedUser = null;
-  userActions.style.display = 'none';
+  selectedUserInfoEl.classList.remove('visible');
   renderUsersList();
 }
 
@@ -671,11 +700,9 @@ function showUserInfo(u) {
   selectedUserInfoEl.innerHTML = `
     <strong>${u.nickname}</strong> ${isGuest ? '(Gast)' : ''}<br>
     Niveau: ${levelName}<br>
-    ${u.age ? 'Leeftijd: ' + u.age + '<br>' : ''}
-    ${u.gender ? 'Geslacht: ' + (u.gender === 'male' ? 'Man' : 'Vrouw') + '<br>' : ''}
-    ${u.location ? 'Locatie: ' + u.location + '<br>' : ''}
-    ${u.additionalInfo ? 'Info: ' + u.additionalInfo : ''}
+    ${u.gender ? 'Geslacht: ' + (u.gender === 'male' ? 'Man' : 'Vrouw') : ''}
   `;
+  selectedUserInfoEl.classList.add('visible');
 }
 
 let popupEl = null;
@@ -720,9 +747,18 @@ function addChannelMessage(m) {
   let color = m.colour || '#ffffff';
   if ($('#textStandardColor').checked) color = '#ffffff';
 
-  li.innerHTML = `<span class="timestamp">[${m.timestamp}]</span> <span class="sender ${levelClass}">${m.sender}</span> zegt: <span style="color:${color};${isBold}">${replaceEmoticons(m.content)}</span>`;
+  const showTime = $('#showTimestamps') && $('#showTimestamps').checked;
+  const timeStr = showTime ? `<span class="timestamp">[${m.timestamp}]</span> ` : '';
+
+  li.innerHTML = `${timeStr}<span class="sender ${levelClass}">${m.sender}</span> zegt: <span style="color:${color};${isBold}">${replaceEmoticons(m.content)}</span>`;
   messagesList.appendChild(li);
   scrollToBottom(channelChatArea);
+
+  if ($('#nameNotifications') && $('#nameNotifications').checked && thisUser) {
+    if (m.content.toLowerCase().includes(thisUser.nickname.toLowerCase()) && m.sender !== thisUser.nickname) {
+      addServerMessage(`${m.sender} heeft je naam genoemd!`);
+    }
+  }
 }
 
 function addServerMessage(msg) {
@@ -807,13 +843,14 @@ function renderSearchResults(results) {
   searchUsersListEl.innerHTML = '';
   searchUsersListEl.style.display = 'block';
   usersList.style.display = 'none';
+  switchRightView('usersView');
 
   for (const u of results) {
     const li = document.createElement('li');
     const levelClass = getLevelClass(u.currentChannelUserLevel || 0);
     const isGuest = u.nickname.startsWith('~');
     const iconClass = isGuest ? 'guest' : levelClass;
-    li.innerHTML = `<span class="userIcon ${iconClass}"></span><span class="userName">${u.nickname}</span> <span style="color:var(--text-dim);font-size:11px;">(${u.currentChannel || ''})</span>`;
+    li.innerHTML = `<span class="userIcon ${iconClass}"></span><span class="userName">${u.nickname}</span> <span style="color:#888;font-size:11px;">(${u.currentChannel || ''})</span>`;
     li.addEventListener('click', () => selectUser(u));
     searchUsersListEl.appendChild(li);
   }
