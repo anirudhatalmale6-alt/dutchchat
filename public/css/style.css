@@ -205,6 +205,33 @@ html, body {
 }
 #chatSide.hidden { display: none; }
 
+/* CHANNEL TABS */
+#channelTabs {
+  display: flex;
+  background: #111;
+  flex-shrink: 0;
+}
+#channelTabs:empty { display: none; }
+.channelTab {
+  padding: 3px 8px;
+  font-size: 11px;
+  color: #ccc;
+  background: #222;
+  border: 1px solid #444;
+  border-bottom: none;
+  cursor: default;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.channelTab .tabClose {
+  font-size: 9px;
+  cursor: pointer;
+  opacity: 0.5;
+  vertical-align: super;
+}
+.channelTab .tabClose:hover { opacity: 1; color: #cc0000; }
+
 /* RED WELCOME BAR */
 #welcomeBar {
   background: var(--accent);
@@ -473,16 +500,16 @@ html, body {
 .actionBtn {
   flex: 1;
   padding: 5px 2px;
-  background: #333;
-  color: #ddd;
-  border: 1px solid #555;
+  background: #e8e8e8;
+  color: #333;
+  border: 1px solid #bbb;
   font-size: 10px;
   font-weight: 600;
   cursor: pointer;
   text-align: center;
   transition: background 0.1s;
 }
-.actionBtn:hover { background: #444; color: #fff; }
+.actionBtn:hover { background: #ddd; color: #000; }
 .actionLink {
   text-align: center;
   padding: 4px 0 2px 0;

@@ -43,6 +43,7 @@ const colorPicker = $('#colorPicker');
 const welcomeBar = $('#welcomeBar');
 const userStatusLine = $('#userStatusLine');
 const channelChatArea = $('#channelChatArea');
+const channelTabsEl = $('#channelTabs');
 
 // Private
 const privateChatArea = $('#privateChatArea');
@@ -472,7 +473,14 @@ socket.on('server message', (msg) => {
 
 socket.on('channel users list', (msg) => {
   channelUsers = JSON.parse(msg);
+  const me = channelUsers.find(u => u.nickname === thisUser.nickname);
+  if (me) {
+    thisUser.currentChannelUserLevel = me.currentChannelUserLevel;
+    thisUser.silenced = me.silenced;
+  }
   renderUsersList();
+  updateModButtons();
+  updateWelcomeBar();
 });
 
 socket.on('user joined channel', (msg) => {
@@ -493,6 +501,11 @@ socket.on('user updated', (msg) => {
   const u = JSON.parse(msg);
   const idx = channelUsers.findIndex(cu => cu.nickname === u.nickname);
   if (idx !== -1) channelUsers[idx] = u;
+  if (thisUser && u.nickname === thisUser.nickname) {
+    thisUser.currentChannelUserLevel = u.currentChannelUserLevel;
+    thisUser.silenced = u.silenced;
+    updateModButtons();
+  }
   renderUsersList();
   if (clickedUser && clickedUser.nickname === u.nickname) {
     clickedUser = u;
@@ -507,6 +520,8 @@ socket.on('changed channel', (channelName) => {
     channelUsers = [];
     renderUsersList();
     updateStatusLine();
+    updateWelcomeBar();
+    updateChannelTab();
     return;
   }
   thisUser.currentChannel = channelName;
@@ -515,6 +530,8 @@ socket.on('changed channel', (channelName) => {
   deselectUser();
   activePrivateTab = null;
   updateStatusLine();
+  updateWelcomeBar();
+  updateChannelTab();
   highlightActiveChannel();
   switchRightView('usersView');
 });
@@ -532,12 +549,14 @@ socket.on('channel user numbers update', (msg) => {
   renderChannelList();
   updateUsersHeader();
   updateStatusLine();
+  updateWelcomeBar();
 });
 
 socket.on('channel topic update', (topic) => {
   const ch = channels.find(c => c.name === thisUser.currentChannel);
   if (ch) ch.topic = topic;
   updateStatusLine();
+  updateWelcomeBar();
 });
 
 socket.on('search result', (msg) => {
@@ -573,7 +592,7 @@ function enterChat() {
   chatSide.classList.remove('hidden');
   rightPanel.classList.remove('hidden');
   topIcons.style.display = 'flex';
-  welcomeBar.textContent = 'Welkom ' + thisUser.nickname;
+  updateWelcomeBar();
   messageInput.focus();
 
   loginTime = Date.now();
@@ -589,6 +608,30 @@ function enterChat() {
   }
 
   updateModButtons();
+}
+
+function updateWelcomeBar() {
+  if (!thisUser) return;
+  if (!thisUser.currentChannel) {
+    welcomeBar.textContent = 'Welkom ' + thisUser.nickname;
+    return;
+  }
+  const ch = channels.find(c => c.name === thisUser.currentChannel);
+  const chCount = ch ? (ch.currentUsers || 0) : channelUsers.length;
+  const topic = ch && ch.topic ? ch.topic : '...';
+  welcomeBar.textContent = `${thisUser.nickname} op kanaal ${thisUser.currentChannel} met ${chCount} van ${totalUsers} chatters - ${topic}`;
+}
+
+function updateChannelTab() {
+  channelTabsEl.innerHTML = '';
+  if (!thisUser || !thisUser.currentChannel) return;
+  const tab = document.createElement('div');
+  tab.className = 'channelTab';
+  tab.innerHTML = `<span>${thisUser.currentChannel}</span> <span class="tabClose">x</span>`;
+  tab.querySelector('.tabClose').addEventListener('click', () => {
+    socket.emit('command', '/part');
+  });
+  channelTabsEl.appendChild(tab);
 }
 
 function updateStatusLine() {
@@ -653,12 +696,11 @@ function renderUsersList() {
 
   for (const u of sorted) {
     const li = document.createElement('li');
-    const levelClass = getLevelClass(u.currentChannelUserLevel || 0);
-    const isGuest = u.nickname.startsWith('~');
-    const iconClass = isGuest ? 'guest' : levelClass;
+    const level = u.currentChannelUserLevel || 0;
     const silencedClass = u.silenced ? ' silenced' : '';
+    const iconHtml = level >= 1 ? '<span style="margin-right:3px;">&#9881;</span>' : '';
 
-    li.innerHTML = `<span class="userIcon ${iconClass}"></span><span class="userName${silencedClass}">${u.nickname}</span>`;
+    li.innerHTML = `${iconHtml}<span class="userName${silencedClass}">${u.nickname}</span>`;
     li.dataset.nickname = u.nickname;
 
     if (clickedUser && clickedUser.nickname === u.nickname) li.classList.add('selected');
